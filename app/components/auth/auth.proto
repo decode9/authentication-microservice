@@ -1,0 +1,29 @@
+syntax= "proto3";
+
+package auth;
+
+message Empty {};
+
+message Data {
+
+    string access_code = 1;
+    string username = 2;
+    string email = 3;
+    string password = 4;
+
+};
+
+message DataResponse {
+    Data data = 1;
+}
+
+service DataProcessor {
+    rpc GetData(Empty) returns (Empty) {}
+    rpc PostData(Data) returns (DataResponse) {}
+    rpc PutData(Data) returns (DataResponse) {}
+    rpc DeleteData(Data) returns (Empty) {}
+}
+
+
+
+
