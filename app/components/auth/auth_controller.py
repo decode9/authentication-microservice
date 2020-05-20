@@ -1,6 +1,7 @@
 from .auth_pb2_grpc import DataProcessorServicer, add_DataProcessorServicer_to_server
-from ...utils import Database, Armored
+from ...utils import Database, Armored, BusService
 from . import auth_pb2 as auth_proto
+import json
 
 
 class AuthController(DataProcessorServicer):
@@ -8,6 +9,8 @@ class AuthController(DataProcessorServicer):
     def __init__(self):
         self.__db = Database()
         self.__armor = Armored()
+        self.bus = BusService(self.verify_data)
+        self.bus.listen()
 
     def GetData(self, request, context):
         context.set_code(405)
@@ -33,6 +36,20 @@ class AuthController(DataProcessorServicer):
             context.set_code(500)
             context.set_details('Explode')
             raise AssertionError('Explode')
+
+    def verify_data(self, ch, method, props, body, pika):
+
+        request = json.loads(body)
+
+        data = self.__armor.verify_access_token(request['access_token'])
+        response = {
+            'result': data
+        }
+
+        ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(
+            content_type='application/json', delivery_mode=1, correlation_id=props.correlation_id), body=json.dumps(response))
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def add_service_to_server(self, service, server):
         add_DataProcessorServicer_to_server(service, server)

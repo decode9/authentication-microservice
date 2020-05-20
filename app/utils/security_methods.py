@@ -26,7 +26,7 @@ class Armored():
         salt = os.urandom(64)
 
         process = self.__hash_password(salt, password)
-        
+
         hashed = b64encode(process['salt'] + process['key']).decode('utf-8')
 
         return hashed
@@ -47,8 +47,7 @@ class Armored():
         return False
 
     def get_access_token(self):
-        
-        
+
         payload = {
             "iss": 'TCW-AUTH-SERVER',
             "exp": time.time() + 1800
@@ -57,6 +56,19 @@ class Armored():
         with open(os.path.dirname(__file__) + '/../keys/private.pem') as private:
             private_key = private.read()
 
-        access_token = jwt.encode(payload, private_key, algorithm= 'RS256')
+        access_token = jwt.encode(payload, private_key, algorithm='RS256')
 
         return access_token.decode()
+
+    def verify_access_token(self, token):
+        with open(os.path.dirname(__file__) + '/../keys/public.pem', 'rb') as f:
+            public_key = f.read()
+
+        try:
+            decoded_token = jwt.decode(token.encode(
+            ), public_key, issuer='TCW-AUTH-SERVER', algorithm='RS256')
+        except (jwt.exceptions.InvalidTokenError, jwt.exceptions.InvalidSignatureError, jwt.exceptions.InvalidIssuerError, jwt.exceptions.ExpiredSignatureError) as e:
+            print(e)
+            return False
+
+        return True
