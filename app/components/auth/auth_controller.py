@@ -10,7 +10,7 @@ class AuthController(DataProcessorServicer):
         self.__db = Database()
         self.__armor = Armored()
         self.bus = BusService(self.verify_data)
-        self.bus.listen()
+        self.bus.listen('rpc_queue')
 
     def GetData(self, request, context):
         context.set_code(405)
@@ -21,6 +21,11 @@ class AuthController(DataProcessorServicer):
         try:
 
             data = self.__db.find('users', {"username": request.username})
+
+            print(data)
+
+            if not data['count']:
+                raise Exception('Not users registered')
 
             valid = self.__armor.match_password(
                 data['data'][0]['password'], request.password)
@@ -34,8 +39,8 @@ class AuthController(DataProcessorServicer):
         except Exception as error:
             print(error)
             context.set_code(500)
-            context.set_details('Explode')
-            raise AssertionError('Explode')
+            context.set_details(str(error))
+            raise AssertionError(str(error))
 
     def verify_data(self, ch, method, props, body, pika):
 
