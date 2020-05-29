@@ -47,8 +47,10 @@ class AuthController(DataProcessorServicer):
         request = json.loads(body)
 
         data = self.__armor.verify_access_token(request['access_token'])
+
         response = {
-            'result': data
+            'result': data[0],
+            'message': data[1]
         }
 
         ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(

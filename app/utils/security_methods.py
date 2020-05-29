@@ -68,6 +68,6 @@ class Armored():
             decoded_token = jwt.decode(
                 token.encode(), public_key, issuer='TCW-AUTH-SERVER', algorithm='RS256')
         except (jwt.exceptions.InvalidTokenError, jwt.exceptions.InvalidSignatureError, jwt.exceptions.InvalidIssuerError, jwt.exceptions.ExpiredSignatureError) as e:
-            return False
+            return [False, str(e)]
 
-        return True
+        return [True, 'Authenticated']
