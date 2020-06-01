@@ -25,7 +25,7 @@ class AuthController(DataProcessorServicer):
             print(data)
 
             if not data['count']:
-                raise Exception('Not users registered')
+                raise Exception('Not user registered')
 
             valid = self.__armor.match_password(
                 data['data'][0]['password'], request.password)
